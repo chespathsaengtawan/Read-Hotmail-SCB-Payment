@@ -3,6 +3,8 @@ bin/
 obj/
 
 .env
+
+%USERPROFILE%.rnd
 # User-specific files
 *.user
 *.suo
