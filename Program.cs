@@ -74,7 +74,7 @@ class Program
         {
             var messages = await graphClient.Me.Messages.GetAsync(config =>
             {
-                config.QueryParameters.Filter = "isRead eq false";
+                //config.QueryParameters.Filter = "isRead eq false";
                 config.QueryParameters.Orderby = new[] { "receivedDateTime desc" };
                 config.QueryParameters.Top = 10;
                 config.QueryParameters.Select = new[] { "subject", "receivedDateTime", "bodyPreview", "from", "body", "internetMessageId", "id" };
@@ -97,11 +97,14 @@ class Program
             
             foreach (var message in filters)
             {
+                //var plainText = StripHtml(message?.Body?.Content);
+
                 Console.WriteLine($"Subject: {message.Subject}");
                 Console.WriteLine($"Received: {message.ReceivedDateTime}");
                 Console.WriteLine($"Form: {message?.From?.EmailAddress?.Name}");
                 Console.WriteLine($"MessageId: {message?.InternetMessageId}");
                 Console.WriteLine($"Id: {message?.Id}");
+                //Console.WriteLine($"plainText : {plainText}");
 
                 var database = TestMongoDbConnection();
                 var scb = database.GetCollection<BsonDocument>("scb");
@@ -132,6 +135,8 @@ class Program
                     input = StripHtml(rawBody);
                     //Console.WriteLine(plainText);
                 }
+
+                //Console.WriteLine("plainText : ", input);
 
                 var notification = ParseNotification(input);
 
@@ -227,7 +232,7 @@ class Program
         var recipient = Regex.Match(text, @"เรียน\s+(.*?)\s+คุณได้รับ").Groups[1].Value.Trim();
         var bank = Regex.Match(text, @"จาก:\s*(\w+)").Groups[1].Value.Trim();
         var fromAccount = Regex.Match(text, @"/\s*(\w+)จำนวน").Groups[1].Value.Trim();
-        var amount = decimal.Parse(Regex.Match(text, @"จำนวน\s*\(บาท\):\s*([\d.]+)").Groups[1].Value);
+        var amount = decimal.Parse(Regex.Match(text, @"จำนวน \(บาท\):\s*(.*?)เข้าบัญชี").Groups[1].Value);
         var toAccount = Regex.Match(text, @"เข้าบัญชี:\s*(\w+)").Groups[1].Value.Trim().Replace("วัน", "");
         var datetime = Regex.Match(text, @"วัน/เวลา:\s*(.*?)ขอแสดงความนับถือธนาคารไทยพาณิชย์").Groups[1].Value.Trim();
 
