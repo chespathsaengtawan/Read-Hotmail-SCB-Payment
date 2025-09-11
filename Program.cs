@@ -53,8 +53,10 @@ class Program
 
     static async Task<string> GetTokenAsync()
     {
-        var accounts = await pca.GetAccountsAsync();
         AuthenticationResult result = null;
+        if (pca == null || scopes == null) throw new InvalidOperationException("PCA หรือ Scopes ยังไม่ถูกตั้งค่า");
+        var accounts = await pca.GetAccountsAsync();
+        
         try
         {
             // พยายามดึง token จาก cache ก่อน
@@ -72,9 +74,14 @@ class Program
     {
         try
         {
+            if (graphClient == null)
+            {
+                Console.WriteLine("Graph client ยัง Login ไม่สำเร็จ");
+                return;
+            }
             var messages = await graphClient.Me.Messages.GetAsync(config =>
             {
-                //config.QueryParameters.Filter = "isRead eq false";
+                config.QueryParameters.Filter = "isRead eq false";
                 config.QueryParameters.Orderby = new[] { "receivedDateTime desc" };
                 config.QueryParameters.Top = 10;
                 config.QueryParameters.Select = new[] { "subject", "receivedDateTime", "bodyPreview", "from", "body", "internetMessageId", "id" };
@@ -112,10 +119,11 @@ class Program
 
                 if (existing != null)
                 {
-                    
+
                     Console.WriteLine("อีเมลนี้ถูกบันทึกแล้ว ข้ามการประมวลผล");
                     Console.WriteLine("--------------------------------------------------------------------------------------------------------");
-                    return; // ข้ามอีเมลนี้
+                    //return; // ข้ามอีเมลนี้
+                    continue; 
                 }   
                 
                 Console.WriteLine("อีเมลนี้ยังไม่ถูกบันทึก ดำเนินการประมวลผลต่อ");
